@@ -90,7 +90,7 @@ plt.title("abs(scipy.fft.fft)")
 plt.grid(which='both', axis='both')
 plt.show()
 """
-
+""" tarea 3.a
 bins = [0,0.01,0.25,0.5]
 
 fCentral = []
@@ -124,7 +124,57 @@ for mod in bins:
 print (fCentral)
 print (pAdyacente)
 print (restoDeFrecuencias)
-    
+ """   
+#Ej 3.b
+N = 1000
+fs = 1000 # Hz
+a0 = 1 # Volts
+p0 = 0 # radianes
+f0 = 250+0.5  # Hz 
+ts = 1/fs
+tt,xx0 = mi_funcion_sen (a0,0,f0,p0,N,fs)
+xx1 = xx0
+xx2 = xx0
+xx3 = xx0
+Mj = [0,100,N,10*N]
+aux = np.arange(N//10)
+aux.fill(0.0)
+xx1 = np.hstack((xx1,aux))
+
+aux = np.arange(N)
+aux.fill(0.0)
+xx2 = np.hstack((xx2,aux))
+
+aux = np.arange(10*N)
+aux.fill(0.0)
+xx3 = np.hstack((xx3,aux))
+
+fft0 = sci.fft.fft(xx0)
+fft_abs0 = np.abs(fft0)*2/N
+fft_abs0 = fft_abs0[0:N//2]
+fft1 = sci.fft.fft(xx1)
+fft_abs1 = np.abs(fft1)*2/N
+fft_abs1 = fft_abs1[0:N//2]
+fft2 = sci.fft.fft(xx2)
+fft_abs2 = np.abs(fft2)*2/N
+fft_abs2 = fft_abs2[0:N//2]
+fft3 = sci.fft.fft(xx3)
+fft_abs3 = np.abs(fft3)*2/N
+fft_abs3 = fft_abs3[0:N//2]
+ #Se utilzia 2/N para respetar parseval y que se mantenga la PSD.
+#Se podria pasar a DB para mejorar los detalles en valores minimos.
+freq = np.arange(N/2)
+        
+
+plt.figure(1)
+plt.plot(freq,fft_abs0)
+plt.plot(freq,fft_abs1)
+plt.plot(freq,fft_abs2)
+plt.plot(freq,fft_abs3)
+plt.title("fft's")
+plt.grid(which='both', axis='both')
+
+
 
 
 
@@ -144,13 +194,13 @@ plt.figure (4)
 plt.plot(freq, np.imag(dft) - np.imag(fft))
 plt.title("diferencia parte imag (My_DFT- fft)")
 plt.grid(which='both', axis='both')  
-"""
+
 plt.figure (5)
 plt.plot(tt, xx)
 plt.title("Señal en T")
 plt.grid(which='both', axis='both') 
 
-
+"""
 """ Comentarios de entrega N°1:
     La DFT manual me entrega los valores en los extremos del eje X.
     Al aumentar la frecuencia, los valores que deberian alejarse del centro, 

@@ -72,13 +72,13 @@ plt.figure(1)
 plt.title('Señal: ' + 'Senoidal' )
 plt.xlabel('tiempo [segundos]')
 plt.ylabel('Amplitud [V]')
-#    plt.grid(which='both', axis='both')
+plt.grid(which='both', axis='both')
     
 # presentar una leyenda para cada tipo de señal
 axes_hdl = plt.gca()
     
 # este tipo de sintaxis es *MUY* de Python
-#axes_hdl.legend(line_hdls, sig_type['descripcion'], loc='upper right'  )
+axes_hdl.legend(line_hdls, sig_type['descripcion'], loc='upper right'  )
 """    
 plt.figure(2)
 plt.plot(xx_ac)
