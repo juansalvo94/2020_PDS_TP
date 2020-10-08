@@ -45,15 +45,74 @@ def generador_senoidal (fs, f0, N, a0=1, p0=0):
     # fin de la función  
     return tt, signal
     
+def generador_cuadrada (fs, f0, N, a0=1, p0=0,dt = 0.5):
+    """
+    Parameters
+    ----------
+    fs : float
+        frecuencia de sampleo.
+    f0 : float
+        frecuencia dela señal.
+    N : int
+        cantidad de muestras.
+    a0 : float, optional
+        amplitud. The default is 1.
+    p0 : float, optional
+        fase. The default is 0.
+    dt: float
+        duty de la señal. The default is 0.5
+        
+    Returns
+    -------
+    signal: senoidal evaluada en cada instante 
+    tt:     base de tiempo de la señal
+
+    """
+    Ts = 1/fs
+    tt=np.arange(0.0,N*Ts,Ts)
+    signal = a0 * sig.square( 2*np.pi*f0*tt + p0,dt )
+    
+    return tt,signal
+    
+def generador_dienteDeSierra (fs, f0, N, a0=1, p0=0):
+    """
+    Parameters
+    ----------
+    fs : float
+        frecuencia de sampleo.
+    f0 : float
+        frecuencia dela señal.
+    N : int
+        cantidad de muestras.
+    a0 : float, optional
+        amplitud. The default is 1.
+    p0 : float, optional
+        fase. The default is 0.
+
+    Returns
+    -------
+    tt : TYPE
+        base de tiempo de la señal.
+    signal : TYPE
+        senoidal evaluada en cada instante .
+
+    """
+    Ts = 1/fs
+    tt=np.arange(0.0,N*Ts,Ts)
+    signal = a0* sig.sawtooth(2*np.pi*f0*tt + p0)
+    
+    
+    return tt,signal
+
 N  = 1000 # muestras
 fs = 1000 # Hz
 a0 = 1 # Volts
 p0 = 0 # radianes
 f0 = 1  # Hz ->500Hz
-f1 = 1.5
+f1 = 5
     
 tt,xx = generador_senoidal (fs, f0, N, a0, p0)
-tt,xx2 = generador_senoidal (fs, f1, N, a0, p0)
+tt,xx2 = generador_dienteDeSierra (fs, f1, N, a0, p0)
 
 
 xx_m = np.mean(xx)
