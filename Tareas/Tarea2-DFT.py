@@ -133,44 +133,24 @@ p0 = 0 # radianes
 f0 = 250+0.5  # Hz 
 ts = 1/fs
 tt,xx0 = mi_funcion_sen (a0,0,f0,p0,N,fs)
-xx1 = xx0
-xx2 = xx0
-xx3 = xx0
+xx = []
+fft = []
+fft_abs = []
+eje = []
+
 Mj = [0,100,N,10*N]
-aux = np.arange(N//10)
-aux.fill(0.0)
-xx1 = np.hstack((xx1,aux))
-
-aux = np.arange(N)
-aux.fill(0.0)
-xx2 = np.hstack((xx2,aux))
-
-aux = np.arange(10*N)
-aux.fill(0.0)
-xx3 = np.hstack((xx3,aux))
-
-fft0 = sci.fft.fft(xx0)
-fft_abs0 = np.abs(fft0)*2/N
-fft_abs0 = fft_abs0[0:N//2]
-fft1 = sci.fft.fft(xx1)
-fft_abs1 = np.abs(fft1)*2/N
-fft_abs1 = fft_abs1[0:N//2]
-fft2 = sci.fft.fft(xx2)
-fft_abs2 = np.abs(fft2)*2/N
-fft_abs2 = fft_abs2[0:N//2]
-fft3 = sci.fft.fft(xx3)
-fft_abs3 = np.abs(fft3)*2/N
-fft_abs3 = fft_abs3[0:N//2]
- #Se utilzia 2/N para respetar parseval y que se mantenga la PSD.
-#Se podria pasar a DB para mejorar los detalles en valores minimos.
-freq = np.arange(N/2)
-        
-
+for index in range(4):
+    zeros = np.zeros(Mj[index])
+    xx.append(np.concatenate((xx0,zeros)))
+    aux = sci.fft.fft(xx[index])*2/N
+    size = aux.size//2
+    fft.append(aux[0:size])
+    fft_abs.append(np.abs(aux[0:size]))
+    eje.append(np.arange(0,N/2,(N/2)/size))
+    
 plt.figure(1)
-plt.plot(freq,fft_abs0)
-plt.plot(freq,fft_abs1)
-plt.plot(freq,fft_abs2)
-plt.plot(freq,fft_abs3)
+for index in range(4):
+    plt.plot(eje[index],fft_abs[index])
 plt.title("fft's")
 plt.grid(which='both', axis='both')
 
