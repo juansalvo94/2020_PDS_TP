@@ -119,11 +119,12 @@ def mi_analizador (signal, muestras, plotSi = False, dbSi = False):
 
     """
     fft = sci.fft.fft(signal)
-    fft_abs = np.abs(fft)*2/muestras #Se utilzia 2/N para respetar parseval y que se mantenga la PSD.
+    fft_abs = np.abs(fft)*2/fft.size #Se utilzia 2/N para respetar parseval y que se mantenga la PSD.
     fft_abs = fft_abs[0:muestras//2]
     fft_phs = np.angle(fft,deg = True)
     fft_phs = fft_phs[0:muestras//2]
-    eje = np.arange(muestras/2)
+    
+    eje=np.arange(0,muestras/2,(muestras/2)/fft_abs.size)
     
     if dbSi:
         fft_abs = 20*np.log10(fft_abs[0:muestras//2])
@@ -137,48 +138,19 @@ def mi_analizador (signal, muestras, plotSi = False, dbSi = False):
     return fft_abs,fft_phs,eje
 
 
-N  = 1000 # muestras
+N  = 100000 # muestras
 Nz = 19*N
 fs = 100000 # Hz
 a0 = 1 # Volts
 p0 = 0 # radianes
 f0 = 1  # Hz ->500
-
+"""
 winBartlett = win.bartlett(N) 
 winHann = win.hann(N)
 winBlackman = win.blackman(N)
 winFlatTop = win.flattop(N)
 tt=np.arange(0,N)
 
-"""
-plt.figure(1)
-line_hdls = plt.plot(tt, winBartlett)
-plt.title('Ventana de Bartlett' )
-plt.xlabel('Muestras')
-plt.ylabel('VectorY')
-plt.grid(which='both', axis='both')
-
-plt.figure(2)
-line_hdls = plt.plot(tt, winHann)
-plt.title('Ventana de Hann' )
-plt.xlabel('Muestras')
-plt.ylabel('VectorY')
-plt.grid(which='both', axis='both')
-
-plt.figure(3)
-line_hdls = plt.plot(tt, winBlackman)
-plt.title('Ventana de Blackmann' )
-plt.xlabel('Muestras')
-plt.ylabel('VectorY')
-plt.grid(which='both', axis='both')
-
-plt.figure(4)
-line_hdls = plt.plot(tt, winFlatTop)
-plt.title('Ventana de Flat-Top' )
-plt.xlabel('Muestras')
-plt.ylabel('VectorY')
-plt.grid(which='both', axis='both')
-"""
 plt.figure(5)
 plt.plot(tt, winBartlett,label='Bartlet')
 plt.plot(tt, winHann, label = 'Hann')
@@ -198,10 +170,10 @@ winBlackmanZero = np.concatenate((winBlackman,zeros))
 winFlatTopZero = np.concatenate((winFlatTop,zeros))
 #buscar la forma de  nivelar todas las fft de las ventanas
 
-fftBartlett = mi_analizador(winBartlettZero,N+Nz,False,True)
-fftHann = mi_analizador(winHannZero,N+Nz,False,True)
-fftBlackman = mi_analizador(winBlackmanZero,N+Nz,False,True)
-fftFlatTop = mi_analizador(winFlatTopZero,N+Nz,False,True)
+fftBartlett = mi_analizador(winBartlettZero,N,False,True)
+fftHann = mi_analizador(winHannZero,N,False,True)
+fftBlackman = mi_analizador(winBlackmanZero,N,False,True)
+fftFlatTop = mi_analizador(winFlatTopZero,N,False,True)
 
 plt.figure(6)
 plt.plot(fftBartlett[2], fftBartlett[0],label='Bartlet')
@@ -211,5 +183,52 @@ plt.plot(fftFlatTop[2], fftFlatTop[0], label = 'Flat-Top')
 plt.title('FFT de las ventanas' )
 plt.xlabel('Muestras')
 plt.ylabel('Amplitud')
+plt.grid(which='both', axis='both')
+plt.legend()
+"""
+
+#Punto 2
+N  = 1000 # muestras
+fs = 1000 # Hz
+p0 = 0 # radianes
+f1 = 250  # Hz ->500
+f2 = 260
+a1 = 1
+a2 = 0.01
+tt,xx1 = generador_senoidal(fs,f1,N,a1,p0)
+tt,xx2 = generador_senoidal(fs,f2,N,a2,p0)
+xx0 = xx1 + xx2
+
+#Aplico Zero Padding
+zeros = np.zeros(19*N)
+#xx1 = np.concatenate((xx1,zeros))
+#xx2 = np.concatenate((xx2,zeros))
+#xx0 = np.concatenate((xx0,zeros))
+
+ffta1 = np.abs(sci.fft.fft(xx1)*2/N)
+ffta1 = ffta1[0:xx1.size//2]
+ffta1 = 20*np.log10(ffta1)
+ffta2 = np.abs(sci.fft.fft(xx2)*2/N)
+ffta2 = ffta2[0:xx2.size//2]
+ffta2 = 20*np.log10(ffta2)
+ffta0 = np.abs(sci.fft.fft(xx0)*2/N)
+ffta0 = ffta0[0:xx0.size//2]
+ffta0 = 20*np.log10(ffta0)
+fft_eje = np.arange(0,N/2,(N/2)/ffta1.size)
+    
+plt.figure(2)
+plt.plot(fft_eje,ffta1,label='a1')
+plt.plot(fft_eje,ffta2,label='a2')
+plt.title('Señales separadas' )
+plt.xlabel('Muestras')
+plt.ylabel('Amplitud [dB]')
+plt.grid(which='both', axis='both')
+plt.legend()
+
+plt.figure(3)
+plt.plot(fft_eje,ffta0,label='a1+a2')
+plt.title('Señales Juntas' )
+plt.xlabel('Muestras')
+plt.ylabel('Amplitud [dB]')
 plt.grid(which='both', axis='both')
 plt.legend()
