@@ -118,13 +118,14 @@ def mi_analizador (signal, muestras, plotSi = False, dbSi = False):
         Eje de frecuencias.
 
     """
+    tam = signal.size
     fft = sci.fft.fft(signal)
-    fft_abs = np.abs(fft)*2/fft.size #Se utilzia 2/N para respetar parseval y que se mantenga la PSD.
-    fft_abs = fft_abs[0:muestras//2]
+    fft_abs = np.abs(fft)*2/muestras #Se utilzia 2/N para respetar parseval y que se mantenga la PSD.
+    fft_abs = fft_abs[0:tam//2]
     fft_phs = np.angle(fft,deg = True)
-    fft_phs = fft_phs[0:muestras//2]
+    fft_phs = fft_phs[0:tam//2]
     
-    eje=np.arange(0,muestras/2,(muestras/2)/fft_abs.size)
+    eje=np.arange(0,muestras/2,(muestras)/tam)
     
     if dbSi:
         fft_abs = 20*np.log10(fft_abs[0:muestras//2])
@@ -137,26 +138,32 @@ def mi_analizador (signal, muestras, plotSi = False, dbSi = False):
         
     return fft_abs,fft_phs,eje
 
+#Punto 1.a
 
-N  = 100000 # muestras
+N  = 1000 # muestras
 Nz = 19*N
-fs = 100000 # Hz
+fs = 1000 # Hz
 a0 = 1 # Volts
 p0 = 0 # radianes
 f0 = 1  # Hz ->500
-"""
-winBartlett = win.bartlett(N) 
-winHann = win.hann(N)
-winBlackman = win.blackman(N)
-winFlatTop = win.flattop(N)
+
+winBartlett =   1.001002003*win.bartlett(N) 
+winHann =       1.001001001*win.hann(N)
+winBlackman =   1.191667858*win.blackman(N)
+#winFlatTop =    2.321661568*win.flattop(N)
+winFlatTop =    win.flattop(N)
+fftFlatTop = sci.fft.fft(winFlatTop)
+print(2*np.abs(fftFlatTop[0])/N)
+winFlatTop = win.flattop(N)/(2*np.abs(fftFlatTop[0])/N)
+
 tt=np.arange(0,N)
 
-plt.figure(5)
+plt.figure(1,(21,9))
 plt.plot(tt, winBartlett,label='Bartlet')
 plt.plot(tt, winHann, label = 'Hann')
 plt.plot(tt, winBlackman, label = 'Blackman')
 plt.plot(tt, winFlatTop, label = 'Flat-Top')
-plt.title('Ventanas' )
+plt.title('Ventanas: w(k)' )
 plt.xlabel('Muestras')
 plt.ylabel('Amplitud')
 plt.grid(which='both', axis='both')
@@ -170,12 +177,12 @@ winBlackmanZero = np.concatenate((winBlackman,zeros))
 winFlatTopZero = np.concatenate((winFlatTop,zeros))
 #buscar la forma de  nivelar todas las fft de las ventanas
 
-fftBartlett = mi_analizador(winBartlettZero,N,False,True)
-fftHann = mi_analizador(winHannZero,N,False,True)
-fftBlackman = mi_analizador(winBlackmanZero,N,False,True)
-fftFlatTop = mi_analizador(winFlatTopZero,N,False,True)
+fftBartlett = mi_analizador(winBartlettZero,N,False,False)
+fftHann = mi_analizador(winHannZero,N,False,False)
+fftBlackman = mi_analizador(winBlackmanZero,N,False,False)
+fftFlatTop = mi_analizador(winFlatTopZero,N,False,False)
 
-plt.figure(6)
+plt.figure(2,(21,9))
 plt.plot(fftBartlett[2], fftBartlett[0],label='Bartlet')
 plt.plot(fftHann[2], fftHann[0], label = 'Hann')
 plt.plot(fftBlackman[2], fftBlackman[0], label = 'Blackman')
@@ -185,9 +192,10 @@ plt.xlabel('Muestras')
 plt.ylabel('Amplitud')
 plt.grid(which='both', axis='both')
 plt.legend()
-"""
+
 
 #Punto 2
+"""
 N  = 1000 # muestras
 fs = 1000 # Hz
 p0 = 0 # radianes
@@ -232,3 +240,4 @@ plt.xlabel('Muestras')
 plt.ylabel('Amplitud [dB]')
 plt.grid(which='both', axis='both')
 plt.legend()
+"""
