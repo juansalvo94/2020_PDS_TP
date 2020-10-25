@@ -128,7 +128,9 @@ def mi_analizador (signal, muestras, plotSi = False, dbSi = False):
     eje=np.arange(0,muestras/2,(muestras)/tam)
     
     if dbSi:
-        fft_abs = 20*np.log10(fft_abs[0:muestras//2])
+        np.seterr(divide = 'ignore')
+        fft_abs = 20*np.log10(fft_abs[0:tam//2])
+        np.seterr(divide = 'warn') 
 
     if plotSi:
         plt.plot(eje, fft_abs)
@@ -147,22 +149,31 @@ a0 = 1 # Volts
 p0 = 0 # radianes
 f0 = 1  # Hz ->500
 
-winBartlett =   1.001002003*win.bartlett(N) 
-winHann =       1.001001001*win.hann(N)
-winBlackman =   1.191667858*win.blackman(N)
-#winFlatTop =    2.321661568*win.flattop(N)
-winFlatTop =    win.flattop(N)
-fftFlatTop = sci.fft.fft(winFlatTop)
-print(2*np.abs(fftFlatTop[0])/N)
-winFlatTop = win.flattop(N)/(2*np.abs(fftFlatTop[0])/N)
+winFlatTop  =   win.flattop(N)
+fftFlatTop  =   sci.fft.fft(winFlatTop)
+winFlatTop  =   win.flattop(N)/(2*np.abs(fftFlatTop[0])/N)
+winBartlett =   win.bartlett(N)
+fftBartlett =   sci.fft.fft(winBartlett)
+winBartlett =   win.bartlett(N)/(2*np.abs(fftBartlett[0])/N)
+winHann     =   win.hann(N)
+fftHann     =   sci.fft.fft(winHann)
+winHann     =   win.hann(N)/(2*np.abs(fftHann[0])/N)
+winBlackman =   win.blackman(N)
+fftBlackman =   sci.fft.fft(winBlackman)
+winBlackman =   win.blackman(N)/(2*np.abs(fftBlackman[0])/N)
+winRect     =   np.ones(N)
+fftRect     =   sci.fft.fft(winRect)
+winRect     =   np.ones(N)/(2*np.abs(fftRect[0])/N)
 
 tt=np.arange(0,N)
 
 plt.figure(1,(21,9))
-plt.plot(tt, winBartlett,label='Bartlet')
-plt.plot(tt, winHann, label = 'Hann')
-plt.plot(tt, winBlackman, label = 'Blackman')
-plt.plot(tt, winFlatTop, label = 'Flat-Top')
+plt.clf()
+plt.plot(tt, winBartlett,   label = 'Bartlet'       )
+plt.plot(tt, winHann,       label = 'Hann'          )
+plt.plot(tt, winBlackman,   label = 'Blackman'      )
+plt.plot(tt, winFlatTop,    label = 'Flat-Top'      )
+plt.plot(tt, winRect,       label = 'Rectangular'   )
 plt.title('Ventanas: w(k)' )
 plt.xlabel('Muestras')
 plt.ylabel('Amplitud')
@@ -171,27 +182,64 @@ plt.legend()
 
 #Se aplica Zero-Padding para mejorar la resolucion de la fft
 zeros = np.zeros(Nz)
-winBartlettZero = np.concatenate((winBartlett,zeros))
-winHannZero = np.concatenate((winHann,zeros))
-winBlackmanZero = np.concatenate((winBlackman,zeros))
-winFlatTopZero = np.concatenate((winFlatTop,zeros))
-#buscar la forma de  nivelar todas las fft de las ventanas
+winBartlettZero =   np.concatenate((winBartlett,zeros))
+winHannZero =       np.concatenate((winHann,    zeros))
+winBlackmanZero =   np.concatenate((winBlackman,zeros))
+winFlatTopZero =    np.concatenate((winFlatTop, zeros))
+winRectZero =       np.concatenate((winRect,    zeros))
 
-fftBartlett = mi_analizador(winBartlettZero,N,False,False)
-fftHann = mi_analizador(winHannZero,N,False,False)
-fftBlackman = mi_analizador(winBlackmanZero,N,False,False)
-fftFlatTop = mi_analizador(winFlatTopZero,N,False,False)
+fftBartlett =   mi_analizador(winBartlettZero,  N,False,True)
+fftHann =       mi_analizador(winHannZero,      N,False,True)
+fftBlackman =   mi_analizador(winBlackmanZero,  N,False,True)
+fftFlatTop =    mi_analizador(winFlatTopZero,   N,False,True)
+fftRect =       mi_analizador(winRectZero,      N,False,True)
 
 plt.figure(2,(21,9))
-plt.plot(fftBartlett[2], fftBartlett[0],label='Bartlet')
-plt.plot(fftHann[2], fftHann[0], label = 'Hann')
-plt.plot(fftBlackman[2], fftBlackman[0], label = 'Blackman')
-plt.plot(fftFlatTop[2], fftFlatTop[0], label = 'Flat-Top')
-plt.title('FFT de las ventanas' )
-plt.xlabel('Muestras')
-plt.ylabel('Amplitud')
+plt.clf()
+plt.axis([0,10,-150,5]) #Se muestra de 0 a 10 en el eje X y de -150 a 0 dB en el eje Y
+plt.plot(fftBartlett[2],    fftBartlett[0], label = 'Bartlet'       )
+plt.plot(fftHann[2],        fftHann[0],     label = 'Hann'          )
+plt.plot(fftBlackman[2],    fftBlackman[0], label = 'Blackman'      )
+plt.plot(fftFlatTop[2],     fftFlatTop[0],  label = 'Flat-Top'      )
+plt.plot(fftRect[2],        fftRect[0],     label = 'Rectangular'   )
+plt.title('FFT de las ventanas: |W(k)|' )
+plt.xlabel('Frecuencia [Hz] ')
+plt.ylabel('Amplitud [dB]')
 plt.grid(which='both', axis='both')
 plt.legend()
+
+#Punto 1.b
+
+#Bartlett
+arrPosBartlett = np.where(fftBartlett[0] <= -3 )
+posBartlett = fftBartlett[2][arrPosBartlett[0][0]]
+print(posBartlett,"Hz")
+maxBartlett = np.max(fftBartlett[0][40:80]) #40 y 80 son los ceros para bartlett
+#Ver como buscar estos indices automagicamente
+
+#Hann
+arrPosHann =  np.where(fftHann[0] <= -3 )
+posHann = fftHann[2][arrPosHann[0][0]]
+print(posHann,"Hz")
+maxHann = np.max(fftHann[0][40:60])
+
+#Blackman
+arrPosBlackman =  np.where(fftBlackman[0] <= -3 )
+posBlackman = fftBlackman[2][arrPosBlackman[0][0]]
+print(posBlackman,"Hz")
+maxBlackman = np.max(fftBlackman[0][60:80])
+
+#flat-top
+arrPosFlatTop =  np.where(fftFlatTop[0] <= -3 )
+posFlatTop = fftFlatTop[2][arrPosFlatTop[0][0]]
+print(posFlatTop,"Hz")
+maxFlatTop = np.max(fftFlatTop[0][100:108])
+
+#Rectangular
+arrPosRect = np.where(fftRect[0] <= -3)
+posRect = fftRect[2][arrPosRect[0][0]]
+print(posRect)
+maxRect = np.max(fftRect[0][20:40])
 
 
 #Punto 2
