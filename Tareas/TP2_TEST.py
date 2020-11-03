@@ -141,7 +141,7 @@ def mi_analizador (signal, muestras, plotSi = False, dbSi = False):
     return fft_abs,fft_phs,eje
 
 #Punto 1.a
-
+"""
 N  = 1000 # muestras
 Nz = 19*N
 fs = 1000 # Hz
@@ -213,37 +213,32 @@ plt.legend()
 #Bartlett
 arrPosBartlett = np.where(fftBartlett[0] <= -3 )
 posBartlett = fftBartlett[2][arrPosBartlett[0][0]]
-print(posBartlett,"Hz")
 maxBartlett = np.max(fftBartlett[0][40:80]) #40 y 80 son los ceros para bartlett
 #Ver como buscar estos indices automagicamente
 
 #Hann
 arrPosHann =  np.where(fftHann[0] <= -3 )
 posHann = fftHann[2][arrPosHann[0][0]]
-print(posHann,"Hz")
 maxHann = np.max(fftHann[0][40:60])
 
 #Blackman
 arrPosBlackman =  np.where(fftBlackman[0] <= -3 )
 posBlackman = fftBlackman[2][arrPosBlackman[0][0]]
-print(posBlackman,"Hz")
 maxBlackman = np.max(fftBlackman[0][60:80])
 
 #flat-top
 arrPosFlatTop =  np.where(fftFlatTop[0] <= -3 )
 posFlatTop = fftFlatTop[2][arrPosFlatTop[0][0]]
-print(posFlatTop,"Hz")
 maxFlatTop = np.max(fftFlatTop[0][100:108])
 
 #Rectangular
 arrPosRect = np.where(fftRect[0] <= -3)
 posRect = fftRect[2][arrPosRect[0][0]]
-print(posRect)
 maxRect = np.max(fftRect[0][20:40])
 
-
-#Punto 2
 """
+#Punto 2
+
 N  = 1000 # muestras
 fs = 1000 # Hz
 p0 = 0 # radianes
@@ -251,15 +246,11 @@ f1 = 250  # Hz ->500
 f2 = 260
 a1 = 1
 a2 = 0.01
+
 tt,xx1 = generador_senoidal(fs,f1,N,a1,p0)
 tt,xx2 = generador_senoidal(fs,f2,N,a2,p0)
 xx0 = xx1 + xx2
 
-#Aplico Zero Padding
-zeros = np.zeros(19*N)
-#xx1 = np.concatenate((xx1,zeros))
-#xx2 = np.concatenate((xx2,zeros))
-#xx0 = np.concatenate((xx0,zeros))
 
 ffta1 = np.abs(sci.fft.fft(xx1)*2/N)
 ffta1 = ffta1[0:xx1.size//2]
@@ -272,7 +263,10 @@ ffta0 = ffta0[0:xx0.size//2]
 ffta0 = 20*np.log10(ffta0)
 fft_eje = np.arange(0,N/2,(N/2)/ffta1.size)
     
-plt.figure(2)
+
+plt.figure(1,(21,9))
+plt.clf()
+#plt.axis([0,10,-150,5])
 plt.plot(fft_eje,ffta1,label='a1')
 plt.plot(fft_eje,ffta2,label='a2')
 plt.title('Señales separadas' )
@@ -281,11 +275,11 @@ plt.ylabel('Amplitud [dB]')
 plt.grid(which='both', axis='both')
 plt.legend()
 
-plt.figure(3)
+plt.figure(2,(21,9))
+plt.clf()
 plt.plot(fft_eje,ffta0,label='a1+a2')
 plt.title('Señales Juntas' )
 plt.xlabel('Muestras')
 plt.ylabel('Amplitud [dB]')
 plt.grid(which='both', axis='both')
 plt.legend()
-"""
