@@ -31,11 +31,18 @@ def generador_senoidal (fs, f0, N, a0=1, p0=0):
     """    
 
     # comienzo de la función  
+    
+    #generar una matriz de tamaño NxM (iendo N el tamaño de muestras 
+    #y M la cantidad de señales) 
     Ts = 1/fs
-    tt=np.arange(0.0,N*Ts,Ts)        
-    signal = a0 * np.sin( 2*np.pi*f0*tt + p0 )  
+    
+    tt=np.arange(0.0,N*Ts,Ts).reshape([N,1])        
+    w =  (2*np.pi*f0).reshape([1,f0.size])
+    
+    signal = a0 * np.sin( w*tt + p0 )  
     # fin de la función  
     return tt, signal
+
 def generador_cuadrada (fs, f0, N, a0=1, p0=0,dt = 0.5):
     """
     Parameters
@@ -238,7 +245,7 @@ maxRect = np.max(fftRect[0][20:40])
 
 """
 #Punto 2
-
+"""
 N  = 1000 # muestras
 fs = 1000 # Hz
 p0 = 0 # radianes
@@ -283,3 +290,81 @@ plt.xlabel('Muestras')
 plt.ylabel('Amplitud [dB]')
 plt.grid(which='both', axis='both')
 plt.legend()
+"""
+
+#Punto 3.a
+N  = 1000 # muestras
+fs = 1000 # Hz
+p0 = 0 # radianes
+f1 = 250  # Hz ->500
+f2 = 260
+a0 = 2
+M = 200 #Cantidad de iteraciones
+n = 20000 #Muestras para ZeroPadding
+
+desintonia = np.random.uniform(-2,2,M)
+w1 = desintonia * (2*np.pi/N) + f1
+tt,xx1 = generador_senoidal(fs,w1,N,a0,p0)
+
+#Ventaneo con cada ventana (Valga la redundancia)
+
+winFlatTop  =   win.flattop(N)
+fftFlatTop  =   sci.fft.fft(winFlatTop)
+winFlatTop  =   win.flattop(N)/(2*np.abs(fftFlatTop[0])/N)
+winBartlett =   win.bartlett(N)
+fftBartlett =   sci.fft.fft(winBartlett)
+winBartlett =   win.bartlett(N)/(2*np.abs(fftBartlett[0])/N)
+winHann     =   win.hann(N)
+fftHann     =   sci.fft.fft(winHann)
+winHann     =   win.hann(N)/(2*np.abs(fftHann[0])/N)
+winBlackman =   win.blackman(N)
+fftBlackman =   sci.fft.fft(winBlackman)
+winBlackman =   win.blackman(N)/(2*np.abs(fftBlackman[0])/N)
+winRect     =   np.ones(N)
+fftRect     =   sci.fft.fft(winRect)
+winRect     =   np.ones(N)/(2*np.abs(fftRect[0])/N)
+
+
+winFlatTopMat   = np.repeat(winFlatTop  ,M,axis = 0).reshape([N,M])
+winBartlettMat  = np.repeat(winBartlett ,M,axis = 0).reshape([N,M])
+winHannMat      = np.repeat(winHann     ,M,axis = 0).reshape([N,M])
+winBlackmanMat  = np.repeat(winBlackman ,M,axis = 0).reshape([N,M])
+winRectMat      = np.repeat(winRect     ,M,axis = 0).reshape([N,M])
+
+xx1FlatTop  =   xx1*winFlatTopMat
+xx1Bartlett =   xx1*winBartlettMat
+xx1Hann     =   xx1*winHannMat
+xx1Blackman =   xx1*winBlackmanMat
+xx1Rect     =   xx1*winRectMat
+
+fftX1FlatTop    =   np.abs(sci.fft.fft(xx1FlatTop,n = n,axis=0))*2/N
+fftX1Bartlett   =   np.abs(sci.fft.fft(xx1Bartlett,n = n,axis=0))*2/N
+fftX1Hann       =   np.abs(sci.fft.fft(xx1Hann,n = n,axis=0))*2/N
+fftX1Blackman   =   np.abs(sci.fft.fft(xx1Blackman,n = n,axis=0))*2/N
+fftX1Rect       =   np.abs(sci.fft.fft(xx1Rect,n = n,axis=0))*2/N
+fftX1FlatTop    =   fftX1FlatTop[0:n//2]
+fftX1Bartlett   =   fftX1Bartlett[0:n//2]
+fftX1Hann       =   fftX1Hann[0:n//2]
+fftX1Blackman   =   fftX1Blackman[0:n//2]
+fftX1Rect       =   fftX1Rect[0:n//2]
+
+eje=np.arange(0,N/2,N/n)
+"""
+plt.figure(1,(21,9))
+plt.clf()
+#plt.axis([0,10,-150,5])
+plt.plot(tt,xx1Rect, label='Senoidal')
+plt.title('Señales separadas' )
+plt.xlabel('Muestras')
+plt.ylabel('Amplitud [dB]')
+plt.grid(which='both', axis='both')
+#plt.legend()
+"""
+plt.figure(2,(21,9))
+plt.clf()
+plt.plot(eje,fftX1Rect,label='fft')
+plt.title('200 señales con desintonia' )
+plt.xlabel('f')
+plt.ylabel('Amplitud ')
+plt.grid(which='both', axis='both')
+#plt.legend()
